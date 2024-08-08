@@ -1,177 +1,167 @@
-# Explainer for the TODO API
+# Camera Effect Status: API
 
-**Instructions for the explainer author: Search for "todo" in this repository and update all the
-instances as appropriate. For the instances in `index.bs`, update the repository name, but you can
-leave the rest until you start the specification. Then delete the TODOs and this block of text.**
+## Authors:
 
-This proposal is an early design sketch by [TODO: team] to describe the problem below and solicit
-feedback on the proposed solution. It has not been approved to ship in Chrome.
-
-TODO: Fill in the whole explainer template below using https://tag.w3.org/explainers/ as a
-reference. Look for [brackets].
-
-## Proponents
-
-- [Proponent team 1]
-- [Proponent team 2]
-- [etc.]
-
-## Participate
-- https://github.com/explainers-by-googlers/[your-repository-name]/issues
-- [Discussion forum]
-
-## Table of Contents [if the explainer is longer than one printed page]
-
-<!-- Update this table of contents by running `npx doctoc README.md` -->
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Introduction](#introduction)
-- [Goals](#goals)
-- [Non-goals](#non-goals)
-- [User research](#user-research)
-- [Use cases](#use-cases)
-  - [Use case 1](#use-case-1)
-  - [Use case 2](#use-case-2)
-- [[Potential Solution]](#potential-solution)
-  - [How this solution would solve the use cases](#how-this-solution-would-solve-the-use-cases)
-    - [Use case 1](#use-case-1-1)
-    - [Use case 2](#use-case-2-1)
-- [Detailed design discussion](#detailed-design-discussion)
-  - [[Tricky design choice #1]](#tricky-design-choice-1)
-  - [[Tricky design choice 2]](#tricky-design-choice-2)
-- [Considered alternatives](#considered-alternatives)
-  - [[Alternative 1]](#alternative-1)
-  - [[Alternative 2]](#alternative-2)
-- [Stakeholder Feedback / Opposition](#stakeholder-feedback--opposition)
-- [References & acknowledgements](#references--acknowledgements)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+*   [bryantchandler@chromium.org](mailto:bryantchandler@chromium.org)
+*   [mfoltz@chromium.org](mailto:mfoltz@chromium.org)
 
 ## Introduction
 
-[The "executive summary" or "abstract".
-Explain in a few sentences what the goals of the project are,
-and a brief overview of how the solution works.
-This should be no more than 1-2 paragraphs.]
+Camera effects implemented at the operating system level are becoming
+increasingly common on macOS, Windows, and ChromeOS. This can cause issues for
+video chat users. For example, if a user enables background blur on both their
+OS and in a video chat application, it can strain their system resources and
+cause the application's blur effect to malfunction. Additionally, users may
+forget they have enabled background blur at the OS level, leading to confusion
+when they are unable to disable it within a video chat application.
+
+We propose addressing these issues by providing a way for Web applications to
+detect the status of video effects applied by the OS or browser. Initially, it
+focuses on background blur, but it is designed to accommodate additional effects
+in the future (e.g. face framing, or lighting adjustment). This capability could
+also be useful in other applications. For example, proctoring applications could
+use it to detect and /request that users disable background blur to ensure
+proper monitoring.
+
+The proposed solution exposes the read-only effect state on MediaStreamTrack and
+VideoFrameMetadata. This will enable Web developers to easily determine the
+current state of the effect and provide event handlers for change detection.
 
 ## Goals
 
-[What is the **end-user need** which this project aims to address? Make this section short, and
-elaborate in the Use cases section.]
+* Allow Web developers to easily access and monitor changes in platform blur.
+* Enable Web developers to build new features that respond to changes in
+    background blur.
+* Provide a consistent and easy-to-use API for accessing platform effect state.
 
 ## Non-goals
 
-[If there are "adjacent" goals which may appear to be in scope but aren't,
-enumerate them here. This section may be fleshed out as your design progresses and you encounter necessary technical and other trade-offs.]
+* This API does not provide a way to control platform effects. That
+    functionality may be exposed in a future API.
+* This API does not attempt to polyfill effects in platforms/browsers that do
+    not support them.
+* This API doesn’t include all possible platform effects. More effects may be
+   exposed as future extensions ofAPI.
 
-## User research
+## MediaStreamTrack
 
-[If any user research has been conducted to inform your design choices,
-discuss the process and findings. User research should be more common than it is.]
+The effect has an associated `MediaEffect` property on the `MediaStreamTrack`
+interface. The state of the effect can be obtained from the property. Any change
+to the state fires an event on the effect object. The presence of the field can
+also be used to detect if the platform/browser supports background blur.
 
-## Use cases
 
-[Describe in detail what problems end-users are facing, which this project is trying to solve. A
-common mistake in this section is to take a web developer's or server operator's perspective, which
-makes reviewers worry that the proposal will violate [RFC 8890, The Internet is for End
-Users](https://www.rfc-editor.org/rfc/rfc8890).]
-
-### Use case 1
-
-### Use case 2
-
-<!-- In your initial explainer, you shouldn't be attached or appear attached to any of the potential
-solutions you describe below this. -->
-
-## [Potential Solution]
-
-[For each related element of the proposed solution - be it an additional JS method, a new object, a new element, a new concept etc., create a section which briefly describes it.]
-
-```js
-// Provide example code - not IDL - demonstrating the design of the feature.
-
-// If this API can be used on its own to address a user need,
-// link it back to one of the scenarios in the goals section.
-
-// If you need to show how to get the feature set up
-// (initialized, or using permissions, etc.), include that too.
+```Javascript
+const stream = await navigator.mediaDevices.getUserMedia({video: true});
+const videoTrack = stream.getVideoTracks()[0];
+if (videoTrack.backgroundBlur) {
+  const effect = videoTrack.backgroundBlur;
+  console.log("Background blur state:", effect.state);
+  effect.addEventListener("change", (event) => {
+    console.log("Background blur state changed:", event.target.state);
+  });
+}
 ```
 
-[Where necessary, provide links to longer explanations of the relevant pre-existing concepts and API.
-If there is no suitable external documentation, you might like to provide supplementary information as an appendix in this document, and provide an internal link where appropriate.]
+## VideoFrameMetadata
 
-[If this is already specced, link to the relevant section of the spec.]
+The `VideoFrameMetadata` interface also exposes the effect state as a
+property. This allows apps to know the state for every frame. This is important
+for scenarios where the app must ensure user privacy by never sending an
+unblurred frame off the user's device.
 
-[If spec work is in progress, link to the PR or draft of the spec.]
 
-[If you have more potential solutions in mind, add ## Potential Solution 2, 3, etc. sections.]
+```Javascript
+const transformer = new TransformStream({
+    async transform(videoFrame, controller) {
+      console.log("Background blur state:",
+        videoFrame.metadata().backgroundBlur);
+      controller.enqueue(videoFrame);
+    },
+  });
 
-### How this solution would solve the use cases
-
-[If there are a suite of interacting APIs, show how they work together to solve the use cases described.]
-
-#### Use case 1
-
-[Description of the end-user scenario]
-
-```js
-// Sample code demonstrating how to use these APIs to address that scenario.
 ```
 
-#### Use case 2
+## Key scenarios
 
-[etc.]
+### Scenario 1
 
-## Detailed design discussion
+Displaying an indicator when background blur is enabled:
 
-### [Tricky design choice #1]
+```
+const stream = await navigator.mediaDevices.getUserMedia({video: true});
+const videoTrack = stream.getVideoTracks()[0];
+const blurIndicator = document.getElementById("blurIndicator");
+videoTrack.addEventListener("change", (event) => {
+  if (event.target.backgroundBlur) {
+    blurIndicator.style.display = event.target.backgroundBlur.state === "enabled" ? "block" : "none";
+  }
+});
+```
+## Privacy Considerations
 
-[Talk through the tradeoffs in coming to the specific design point you want to make.]
+Exposing the effect state reveals some additional information about the user's
+preference.  However, effect state and availability is gated behind the camera
+permission. We believe that this increase of scope for the camera permission is
+acceptable.
 
-```js
-// Illustrated with example code.
+## Detailed design
+
+### API
+
+```
+enum EffectState {
+   "disabled",
+   "enabled"
+}
+
+struct MediaEffectInfo {
+  EffectState state;
+}
+
+partial dictionary VideoFrameMetadata {
+  MediaEffectInfo backgroundBlur;
+}
+
+[Exposed=Window, SecureContext]
+interface MediaEffect : EventTarget {
+  attribute EventHandler onchange;
+  readonly attribute EffectState state;
+}
+
+[Exposed=Window, SecureContext]
+interface BlurEffect : MediaEffect {
+}
+
+partial interface MediaStreamTrack {
+   // null means platform effect is not available 
+   attribute BlurEffect? backgroundBlur;
+}
 ```
 
-[This may be an open question,
-in which case you should link to any active discussion threads.]
+### Event-based notifications
 
-### [Tricky design choice 2]
-
-[etc.]
+The change event is used to notify Web applications when the state of an effect
+changes. This allows applications to respond to changes in real time, without
+having to poll the effect state.
 
 ## Considered alternatives
 
-[This should include as many alternatives as you can,
-from high level architectural decisions down to alternative naming choices.]
+### Exposing effect state as a boolean
 
-### [Alternative 1]
+An alternative design would be to expose the effect state as a boolean value,
+rather than an enum. This would simplify the API, but the enum is more
+expressive, and gives affordance for adding more states in the future.
 
-[Describe an alternative which was considered,
-and why you decided against it.]
+### Effects as an array or map
 
-### [Alternative 2]
+In this approach, the effect names themselves would be defined in an enum (using
+a map would still allow you to map to the enum effect state). There probably
+wouldn’t be much benefit here, as JS already allows developers to iterate over
+the child properties of an object. The downside of the array approach is that it
+would make it harder to look at the state of specific effects a la carte. It
+seems likely that in order to give users relevant information, a site will need
+to look at the state of individual effects, and not just check if any effects
+are enabled.
 
-[etc.]
 
-## Stakeholder Feedback / Opposition
-
-[Implementors and other stakeholders may already have publicly stated positions on this work. If you can, list them here with links to evidence as appropriate.]
-
-- [Implementor A] : Positive
-- [Stakeholder B] : No signals
-- [Implementor C] : Negative
-
-[If appropriate, explain the reasons given by other implementors for their concerns.]
-
-## References & acknowledgements
-
-[Your design will change and be informed by many people; acknowledge them in an ongoing way! It helps build community and, as we only get by through the contributions of many, is only fair.]
-
-[Unless you have a specific reason not to, these should be in alphabetical order.]
-
-Many thanks for valuable feedback and advice from:
-
-- [Person 1]
-- [Person 2]
-- [etc.]
