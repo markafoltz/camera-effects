@@ -50,9 +50,8 @@ interface. The state of the effect can be obtained from the property. Any change
 to the state fires an event on the effect object. The presence of the field can
 also be used to detect if the platform/browser supports background blur.
 
-
-```Javascript
-const stream = await navigator.mediaDevices.getUserMedia({video: true});
+```js
+const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 const videoTrack = stream.getVideoTracks()[0];
 if (videoTrack.backgroundBlur) {
   const effect = videoTrack.backgroundBlur;
@@ -70,16 +69,13 @@ property. This allows apps to know the state for every frame. This is important
 for scenarios where the app must ensure user privacy by never sending an
 unblurred frame off the user's device.
 
-
-```Javascript
+```js
 const transformer = new TransformStream({
-    async transform(videoFrame, controller) {
-      console.log("Background blur state:",
-        videoFrame.metadata().backgroundBlur);
-      controller.enqueue(videoFrame);
-    },
-  });
-
+  async transform(videoFrame, controller) {
+    console.log("Background blur state:", videoFrame.metadata().backgroundBlur);
+    controller.enqueue(videoFrame);
+  },
+});
 ```
 
 ## Key scenarios
@@ -88,13 +84,14 @@ const transformer = new TransformStream({
 
 Displaying an indicator when background blur is enabled:
 
-```
-const stream = await navigator.mediaDevices.getUserMedia({video: true});
+```js
+const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 const videoTrack = stream.getVideoTracks()[0];
 const blurIndicator = document.getElementById("blurIndicator");
 videoTrack.addEventListener("change", (event) => {
   if (event.target.backgroundBlur) {
-    blurIndicator.style.display = event.target.backgroundBlur.state === "enabled" ? "block" : "none";
+    blurIndicator.style.display =
+      event.target.backgroundBlur.state === "enabled" ? "block" : "none";
   }
 });
 ```
@@ -109,7 +106,7 @@ acceptable.
 
 ### API
 
-```
+```webidl
 enum EffectState {
    "disabled",
    "enabled"
