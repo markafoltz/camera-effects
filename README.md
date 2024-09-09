@@ -88,7 +88,7 @@ const transformer = new TransformStream({
 
 Displaying an indicator when background blur is enabled:
 
-```
+```Javascript
 const stream = await navigator.mediaDevices.getUserMedia({video: true});
 const videoTrack = stream.getVideoTracks()[0];
 const blurIndicator = document.getElementById("blurIndicator");
