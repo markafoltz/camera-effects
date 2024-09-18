@@ -16,5 +16,5 @@ jobs:
           SOURCE: spec.bs
           DESTINATION: spec.html
           TOOLCHAIN: bikeshed
-          GH_PAGES_BRANCH: main
+          GH_PAGES_BRANCH: false
           BUILD_FAIL_ON: warning
