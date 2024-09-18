@@ -1,17 +1,17 @@
 <pre class='metadata'>
-Title: The TODO API
-Shortname: todo
+Title: The Camera Effects API
+Shortname: camera-effects
 Level: None
 Status: w3c/UD
-Repository: explainers-by-googlers/todo-your-repo-name
-URL: https://explainers-by-googlers.github.io/todo-your-repo-name
-Editor: TODO: Your Name, Google https://google.com, TODO@google.com
-Abstract: TODO: A short description of your spec, one or two sentences.
+Repository: markafoltz/camera-effects
+URL: https://markafoltz.github.io/camera-effects
+Editor: Mark Foltz, Google, https://github.com/markafoltz, w3cid 68454
+Abstract: Allows Web applications to coordinate usage of camera effects.
 Markup Shorthands: markdown yes, css no
 Complain About: accidental-2119 yes, missing-example-ids yes
 Assume Explicit For: yes
 Die On: warning
-WPT Path Prefix: TODO-API-LABEL
+WPT Path Prefix: CAMERA-EFFECTS
 WPT Display: closed
 Include MDN Panels: if possible
 Include Can I Use Panels: yes
@@ -20,9 +20,4 @@ Include Can I Use Panels: yes
 Introduction {#intro}
 =====================
 
-For now, see the [explainer]([REPOSITORYURL]).
-
-See [https://garykac.github.io/procspec/](https://garykac.github.io/procspec/),
-[https://dlaliberte.github.io/bikeshed-intro/index.html](https://dlaliberte.github.io/bikeshed-intro/index.html),
-and [https://speced.github.io/bikeshed/](https://speced.github.io/bikeshed/) to get started on your
-specificaton.
+For now, see the [explainer](https://markafoltz.github.io/camera-effects/).
