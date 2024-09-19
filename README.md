@@ -41,7 +41,7 @@ current state of the effect and provide event handlers for change detection.
 * This API does not attempt to polyfill effects in platforms/browsers that do
     not support them.
 * This API doesn’t include all possible platform effects. More effects may be
-   exposed as future extensions ofAPI.
+   exposed as future extensions of the API.
 
 ## MediaStreamTrack
 
@@ -67,7 +67,7 @@ if (videoTrack.backgroundBlur) {
 The `VideoFrameMetadata` interface also exposes the effect state as a
 property. This allows apps to know the state for every frame. This is important
 for scenarios where the app must ensure user privacy by never sending an
-unblurred frame off the user's device.
+un-blurred frame off the user's device.
 
 ```js
 const transformer = new TransformStream({
@@ -162,7 +162,7 @@ about where users can control effects (apps vs. platforms).
 
 If we plan to replace any of the existing properties on `MediaStreamTrack` that
 convey similar information, we should understand existing usage first.  Because
-Chrome has not shipped these properties, we will need to rely on devloper
+Chrome has not shipped these properties, we will need to rely on developer
 reports or other browsers to assess usage.
 
 (Note: An [HTTP Archive](https://httparchive.org/) search for the
@@ -173,7 +173,7 @@ positives, but it could be tried...)
 
 Our proposal does not allow applications to control the blur state.  As
 discussed in
-[Explain interaction with contraints](https://github.com/markafoltz/camera-effects/issues/4),
+[Explain interaction with constraints](https://github.com/markafoltz/camera-effects/issues/4),
 this adds significant complexity for users, developers, and browser
 implementers.  It also does not require constraints, which add an additional
 layer of complexity as blur can influence camera enumeration.
