@@ -146,10 +146,10 @@ having to poll the effect state.
 
 The Media Capture and Streams Extensions specification exposes
 background blur settings on a `MediaStreamTrack` as
-[capabilities](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatrackcapabilities-backgroundblur))
+[capabilities](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatrackcapabilities-backgroundblur)
 and as a [setting](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatracksettings-backgroundblur).
 
-### Capability
+### Capabilities
 
 This is a tri-state value that has three possible outcomes:
 - `false` means that blur is not currently supported by the platform
@@ -197,7 +197,8 @@ Features of current spec missing from our proposal:
 
 - Ability to know whether effects can be turned on or off.
 
-Below is an [extension of the current proposal]() that would add this feature.
+Below is an [extension of the current proposal](#exposing-ability-for-applications-to-turn-blur-on-or-off)
+that would add this feature.
 
 ## Considered alternatives
 
@@ -233,7 +234,8 @@ partial dictionary MediaEffectInfo {
 This version lists the states to which that the Web application is allowed to
 transition.  For example if the application is allowed to enable but not disable
 blur, `allowedStates` would contain `"enabled"`.  If no state changes are
-allowed, then `allowedStates` is empty.
+allowed, then `allowedStates` is empty.  This version is more extensible if more
+values are added to the `EffectState` enum.
 
 ```webidl
 partial dictionary MediaEffectInfo {
