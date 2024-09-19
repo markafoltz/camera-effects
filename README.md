@@ -142,10 +142,96 @@ The change event is used to notify Web applications when the state of an effect
 changes. This allows applications to respond to changes in real time, without
 having to poll the effect state.
 
+## Architectural Considerations
+
+One set of guidelines used by the W3C to assess architectural fit of features on
+the Web are the
+[TAG design principles](https://w3ctag.github.io/design-principles/).
+
+Below are brief assessments of how this proposal fits with some of those
+principles.
+
+### 1.1 Put user needs first (Priority of Constituencies)
+
+We believe that exposing blur information to applications improves the user
+experience for camera users, by preventing duplicate and interfering effects
+from being applied by platforms and applications, and helping minimize confusion
+about where users can control effects (apps vs. platforms).
+
+###  1.8 Remove or change capabilities only once you understand existing usage
+
+If we plan to replace any of the existing properties on `MediaStreamTrack` that
+convey similar information, we should understand existing usage first.  Because
+Chrome has not shipped these properties, we will need to rely on devloper
+reports or other browsers to assess usage.
+
+(Note: An [HTTP Archive](https://httparchive.org/) search for the
+`backgroundBlur` property name will likely produce a large number of false
+positives, but it could be tried...)
+
+###  2.1. Prefer simple solutions
+
+Our proposal does not allow applications to control the blur state.  As
+discussed in
+[Explain interaction with contraints](https://github.com/markafoltz/camera-effects/issues/4),
+this adds significant complexity for users, developers, and browser
+implementers.  It also does not require constraints, which add an additional
+layer of complexity as blur can influence camera enumeration.
+
+On the other hand, we are adding properties to both `MediaStreamTrack` and
+`VideoFrameMetadata`, which does add more complexity to the API surface and
+implementation.  Providing effects data on both interfaces allows developers to
+access effects state whether they are accessing the camera stream only through
+`MediaStreamTrack`, or accessing individual `VideoFrame`s.
+
+If we needed to simplify this proposal, we would provide the effects state only
+on `VideoFrameMetadata`, as this is the most accurate and privacy-preserving
+method for conveying the state (by attaching it to individual camera frames).
+
+### 2.4 Be Consistent
+
+Our proposal is not consistent with the existing "constrainable property"
+pattern in MediaStream APIs.
+
+On the other hand, there are a number of new MediaStream APIs that have both
+landed in specifications and shipped such as Region Capture, Element Capture,
+Capture Handle, etc. which are also not consistent with the "constrainable
+property" pattern. Presumably this was because the benefits for usage and
+ergonomics were significant enough to outweigh the guidance to "be consistent."
+
+Note, that there are different realms of consistency, both within specific APIs
+(MediaStream), across the Web platform (Media APIs generally), and outside the
+Web platform (I.e., native APIs for effects), so discussion of "consistency"
+should clarify which realm is the focus.
+
+### 9.1 Don’t expose unnecessary information about devices
+
+We believe we are exposing minimal information necessary for sites to accomplish
+their goals, i.e. prevent duplicate effects, hide unnecessary controls, and
+provide guidance to users to adjust their OS or browser blur setting if needed.
+
+###  9.2 Use care when exposing APIs for selecting or enumerating devices
+
+Our proposal does not impact device enumeration nor does it impact the use of
+constraints to select devices that are blur capable or have blur enabled.
+
+### 9.4. Be proactive about safety
+
+Platform (i.e., OS-level) background blur is currently a global status that is
+tied to a specific camera or browser and thus is shared among origins.  This is
+a constraint of the current blur implementations, and may be relaxed in the
+future as platforms become more capable and allow applications to apply effects
+on individual streams from the same camera.
+
+Unfortunately, enforcing exclusive access by origin (as suggested by TAG) to
+hide blur status would break legitimate use cases like participating in a live
+stream using one Web application while also video conferencing in another Web
+application using the same camera.
+
 ## Comparison with MediaStreamTrack backgroundBlur controls
 
-The Media Capture and Streams Extensions specification exposes
-background blur settings on a `MediaStreamTrack` as
+The [Media Capture and Streams](https://w3c.github.io/mediacapture-main/)
+specification exposes background blur settings on a `MediaStreamTrack` as
 [capabilities](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatrackcapabilities-backgroundblur)
 and as a [setting](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatracksettings-backgroundblur).
 
