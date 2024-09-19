@@ -2,8 +2,8 @@
 
 ## Authors:
 
-*   [bryantchandler@chromium.org](mailto:bryantchandler@chromium.org)
-*   [mfoltz@chromium.org](mailto:mfoltz@chromium.org)
+*   [bryantchandler@google.com](mailto:bryantchandler@chromium.org)
+*   [mfoltz@google.com](mailto:mfoltz@chromium.org)
 
 ## Introduction
 
@@ -112,8 +112,8 @@ enum EffectState {
    "enabled"
 }
 
-struct MediaEffectInfo {
-  EffectState state;
+dictionary MediaEffectInfo {
+  readonly EffectState state;
 }
 
 partial dictionary VideoFrameMetadata {
@@ -142,6 +142,63 @@ The change event is used to notify Web applications when the state of an effect
 changes. This allows applications to respond to changes in real time, without
 having to poll the effect state.
 
+## Comparison with MediaStreamTrack backgroundBlur controls
+
+The Media Capture and Streams Extensions specification exposes
+background blur settings on a `MediaStreamTrack` as
+[capabilities](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatrackcapabilities-backgroundblur))
+and as a [setting](https://w3c.github.io/mediacapture-main/getusermedia.html#dom-mediatracksettings-backgroundblur).
+
+### Capability
+
+This is a tri-state value that has three possible outcomes:
+- `false` means that blur is not currently supported by the platform
+- `true` means that blur is supported and cannot be turned off
+- [`false`, `true`] means that blur is supported, and can be turned on or off
+
+This goes above and beyond what is included in our proposal.  Our proposal does
+not expose the level of application control for blur state.
+
+We have concerns about whether applications should be allowed to control
+platform blur directly, especially with the current generation of effects
+implementations; in these, changing the effects for one site changes it for
+others that are also consuming the same camera stream. 
+
+Also, we are considering extensions to this proposal.  These extensions include:
+
+- An event that would let applications know if blur support has changed
+  dynamically;
+- In scenarios where the application cannot disable blur directly, whether the
+  browser can be asked to prompt the user to do so;
+- Information indicating whether blur was supported by the browser, the OS, or
+  both.
+
+Any of these new features, if implemented, would require a different API shape
+than what is currently in the spec.  Therefore, the current pattern is not very
+good for extensibility along these lines.
+
+### Setting
+
+This exposes the current blur state as a boolean.  Our proposal uses an enum,
+which is preferred for extensibility.
+
+Our proposal goes beyond this and adds an event for when the blur status
+changes.  The current spec does not provide applications a way to know when the
+current blur state has changed.
+
+### Summary
+
+Features of our proposal missing from current spec:
+
+- Events for effects status changes.
+- Extensibility for future ways applications could interact with effects.
+
+Features of current spec missing from our proposal:
+
+- Ability to know whether effects can be turned on or off.
+
+Below is an [extension of the current proposal]() that would add this feature.
+
 ## Considered alternatives
 
 ### Exposing effect state as a boolean
@@ -161,4 +218,25 @@ seems likely that in order to give users relevant information, a site will need
 to look at the state of individual effects, and not just check if any effects
 are enabled.
 
+### Exposing ability for applications to turn blur on or off
 
+If we wished to expose this ability, the API could be extended with booleans
+indicating the allowed state transitions.
+
+```webidl
+partial dictionary MediaEffectInfo {
+  boolean canEnable = false;
+  boolean canDisable = false;
+}
+```
+
+This version lists the states to which that the Web application is allowed to
+transition.  For example if the application is allowed to enable but not disable
+blur, `allowedStates` would contain `"enabled"`.  If no state changes are
+allowed, then `allowedStates` is empty.
+
+```webidl
+partial dictionary MediaEffectInfo {
+  required sequence<EffectState> allowedStates;
+}
+```
