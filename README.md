@@ -2,8 +2,8 @@
 
 ## Authors:
 
-- [bryantchandler@google.com](mailto:bryantchandler@chromium.org)
-- [mfoltz@google.com](mailto:mfoltz@chromium.org)
+- [bryantchandler@google.com](mailto:bryantchandler@google.com)
+- [mfoltz@google.com](mailto:mfoltz@google.com)
 
 ## Introduction
 
@@ -23,9 +23,9 @@ also be useful in other applications. For example, proctoring applications could
 use it to detect and /request that users disable background blur to ensure
 proper monitoring.
 
-The proposed solution exposes the read-only effect state on VideoFrameMetadata.
-This will enable Web developers to easily determine the current state of the
-effect.
+The proposed solution exposes the read-only effect state on
+`VideoFrameMetadata`. This will enable Web developers to easily determine the
+current state of the effect.
 
 ## Goals
 
@@ -36,8 +36,7 @@ effect.
 
 ## Non-goals
 
-- This API does not provide a way to control platform effects. That
-  functionality may be exposed in a future API.
+- This API does not provide a way to control platform effects.
 - This API does not attempt to polyfill effects in platforms/browsers that do
   not support them.
 - This API doesn’t include all possible platform effects. More effects may be
@@ -201,8 +200,6 @@ others that are also consuming the same camera stream.
 
 Also, we are considering extensions to this proposal. These extensions include:
 
-- An event that would let applications know if blur support has changed
-  dynamically;
 - In scenarios where the application cannot disable blur directly, whether the
   browser can be asked to prompt the user to do so;
 - Information indicating whether blur was supported by the browser, the OS, or
@@ -228,10 +225,6 @@ Features of current spec missing from our proposal:
 
 - Ability to know whether effects can be turned on or off.
 
-Below is an [extension of the current
-proposal](#exposing-ability-for-applications-to-turn-blur-on-or-off) that would
-add this feature.
-
 ## Considered alternatives
 
 ### Exposing effect state as a boolean
@@ -250,27 +243,3 @@ would make it harder to look at the state of specific effects a la carte. It
 seems likely that in order to give users relevant information, a site will need
 to look at the state of individual effects, and not just check if any effects
 are enabled.
-
-### Exposing ability for applications to turn blur on or off
-
-If we wished to expose this ability, the API could be extended with booleans
-indicating the allowed state transitions.
-
-```webidl
-partial dictionary MediaEffectInfo {
-  boolean canEnable = false;
-  boolean canDisable = false;
-}
-```
-
-This version lists the states to which that the Web application is allowed to
-transition. For example if the application is allowed to enable but not disable
-blur, `allowedStates` would contain `"enabled"`. If no state changes are
-allowed, then `allowedStates` is empty. This version is more extensible if more
-values are added to the `EffectState` enum.
-
-```webidl
-partial dictionary MediaEffectInfo {
-  required sequence<EffectState> allowedStates;
-}
-```
