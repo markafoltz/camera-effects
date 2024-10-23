@@ -106,13 +106,8 @@ acceptable.
 ### API
 
 ```webidl
-enum EffectState {
-   "disabled",
-   "enabled"
-}
-
 dictionary MediaEffectInfo {
-  readonly EffectState state;
+  readonly boolean isEnabled;
 }
 
 partial dictionary VideoFrameMetadata {
@@ -211,7 +206,7 @@ good for extensibility along these lines.
 
 ### Setting
 
-This exposes the current blur state as a boolean. Our proposal uses an enum,
+This exposes the current blur state as a boolean. Our proposal uses a dictionary,
 which is preferred for extensibility.
 
 ### Summary
@@ -227,11 +222,23 @@ Features of current spec missing from our proposal:
 
 ## Considered alternatives
 
-### Exposing effect state as a boolean
+### Effect state as an enum
 
-An alternative design would be to expose the effect state as a boolean value,
-rather than an enum. This would simplify the API, but the enum is more
-expressive, and gives affordance for adding more states in the future.
+```webidl
+enum EffectState {
+   "disabled",
+   "enabled"
+}
+
+dictionary MediaEffectInfo {
+  readonly EffectState state;
+}
+```
+
+This would use an enum instead of `isEnabled`, but we can't envision a scenario
+where we would need more than two options, so it could be simplified to a
+boolean. If more information is needed in the future, then it can be added to
+`MediaEffectInfo` as a separate field.
 
 ### Effects as an array or map
 
