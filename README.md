@@ -44,7 +44,7 @@ current state of the effect.
 
 ## VideoFrameMetadata
 
-The `VideoFrameMetadata` interface also exposes the effect state as a property.
+The `VideoFrameMetadata` interface exposes the effect state as a property.
 This allows apps to know the state for every frame. This is important for
 scenarios where the app must ensure user privacy by never sending an un-blurred
 frame off the user's device.
@@ -74,7 +74,8 @@ const trackGenerator = new MediaStreamTrackGenerator({ kind: "video" });
 const transformer = new TransformStream({
   async transform(videoFrame, controller) {
     blurIndicator.style.display =
-      videoFrame.backgroundBlur === "enabled" ? "block" : "none";
+      "backgroundBlur" in videoFrame.metadata() &&
+      videoFrame.metadata().backgroundBlur.enabled ? "block" : "none";
 
     controller.enqueue(videoFrame);
   },
@@ -85,13 +86,6 @@ trackProcessor.readable
   .pipeTo(trackGenerator.writable);
 
 const processedStream = new MediaStream();
-
-videoTrack.addEventListener("change", (event) => {
-  if (event.target.backgroundBlur) {
-    blurIndicator.style.display =
-      event.target.backgroundBlur.state === "enabled" ? "block" : "none";
-  }
-});
 ```
 
 ## Privacy Considerations
@@ -107,13 +101,19 @@ acceptable.
 
 ```webidl
 dictionary MediaEffectInfo {
-  readonly boolean isEnabled;
+  readonly boolean enabled;
 }
 
+partial dictionary BackgroundBlur : MediaEffectInfo {}
+
 partial dictionary VideoFrameMetadata {
-  MediaEffectInfo backgroundBlur;
+  BackgroundBlur backgroundBlur;
 }
 ```
+
+Background blur state is stored in a `MediaEffectInfo` dictionary to give room
+for future expansion. For example, we might want to include information about
+blur intensity, or about the source of the effect.
 
 ## Architectural Considerations
 
@@ -235,7 +235,7 @@ dictionary MediaEffectInfo {
 }
 ```
 
-This would use an enum instead of `isEnabled`, but we can't envision a scenario
+This would use an enum instead of `enabled`, but we can't envision a scenario
 where we would need more than two options, so it could be simplified to a
 boolean. If more information is needed in the future, then it can be added to
 `MediaEffectInfo` as a separate field.
