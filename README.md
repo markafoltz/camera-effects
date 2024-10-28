@@ -111,7 +111,7 @@ partial dictionary VideoFrameMetadata {
 }
 ```
 
-Background blur state is stored in a `MediaEffectInfo` dictionary to give room
+Background blur state is stored in a `BackgroundBlur` dictionary to give room
 for future expansion. For example, we might want to include information about
 blur intensity, or about the source of the effect.
 
