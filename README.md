@@ -44,7 +44,7 @@ current state of the effect.
 
 ## VideoFrameMetadata
 
-The `VideoFrameMetadata` interface also exposes the effect state as a property.
+The `VideoFrameMetadata` interface exposes the effect state as a property.
 This allows apps to know the state for every frame. This is important for
 scenarios where the app must ensure user privacy by never sending an un-blurred
 frame off the user's device.
@@ -74,7 +74,8 @@ const trackGenerator = new MediaStreamTrackGenerator({ kind: "video" });
 const transformer = new TransformStream({
   async transform(videoFrame, controller) {
     blurIndicator.style.display =
-      videoFrame.backgroundBlur === "enabled" ? "block" : "none";
+      "backgroundBlur" in videoFrame.metadata() &&
+      videoFrame.metadata().backgroundBlur.enabled ? "block" : "none";
 
     controller.enqueue(videoFrame);
   },
@@ -85,13 +86,6 @@ trackProcessor.readable
   .pipeTo(trackGenerator.writable);
 
 const processedStream = new MediaStream();
-
-videoTrack.addEventListener("change", (event) => {
-  if (event.target.backgroundBlur) {
-    blurIndicator.style.display =
-      event.target.backgroundBlur.state === "enabled" ? "block" : "none";
-  }
-});
 ```
 
 ## Privacy Considerations
@@ -106,19 +100,20 @@ acceptable.
 ### API
 
 ```webidl
-enum EffectState {
-   "disabled",
-   "enabled"
+dictionary MediaEffectInfo {
+  readonly boolean enabled;
 }
 
-dictionary MediaEffectInfo {
-  readonly EffectState state;
-}
+partial dictionary BackgroundBlur : MediaEffectInfo {}
 
 partial dictionary VideoFrameMetadata {
-  MediaEffectInfo backgroundBlur;
+  BackgroundBlur backgroundBlur;
 }
 ```
+
+Background blur state is stored in a `BackgroundBlur` dictionary to give room
+for future expansion. For example, we might want to include information about
+blur intensity, or about the source of the effect.
 
 ## Architectural Considerations
 
@@ -211,7 +206,7 @@ good for extensibility along these lines.
 
 ### Setting
 
-This exposes the current blur state as a boolean. Our proposal uses an enum,
+This exposes the current blur state as a boolean. Our proposal uses a dictionary,
 which is preferred for extensibility.
 
 ### Summary
@@ -227,11 +222,23 @@ Features of current spec missing from our proposal:
 
 ## Considered alternatives
 
-### Exposing effect state as a boolean
+### Effect state as an enum
 
-An alternative design would be to expose the effect state as a boolean value,
-rather than an enum. This would simplify the API, but the enum is more
-expressive, and gives affordance for adding more states in the future.
+```webidl
+enum EffectState {
+   "disabled",
+   "enabled"
+}
+
+dictionary MediaEffectInfo {
+  readonly EffectState state;
+}
+```
+
+This would use an enum instead of `enabled`, but we can't envision a scenario
+where we would need more than two options, so it could be simplified to a
+boolean. If more information is needed in the future, then it can be added to
+`MediaEffectInfo` as a separate field.
 
 ### Effects as an array or map
 
